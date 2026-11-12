@@ -1,0 +1,20 @@
+@startuml
+title Komponentlar diagrammasi (MVP)
+[React/HTML Dashboard] as UI
+[FastAPI Backend] as API
+[Coordinator] as C
+[Monitoring Agent] as M
+[Incident Agent] as I
+[Prediction Agent] as P
+[Signal Optimization Agent] as O
+[Emergency Agent] as E
+database "PostgreSQL / SQLite" as DB
+UI --> API
+API --> C
+C --> M
+C --> I
+C --> P
+C --> O
+C --> E
+API --> DB
+@enduml

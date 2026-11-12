@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Aqlli yo'l harakatini boshqarish</title>
+<style>
+  body{font-family:system-ui,sans-serif;margin:0;background:#0f172a;color:#e2e8f0}
+  header{padding:16px 24px;background:#1e293b}
+  main{max-width:960px;margin:24px auto;padding:0 16px;display:grid;gap:16px}
+  .card{background:#1e293b;border-radius:12px;padding:16px}
+  button{background:#38bdf8;border:0;border-radius:8px;padding:10px 16px;font-weight:600;cursor:pointer;margin-right:8px}
+  pre{white-space:pre-wrap;font-size:13px}
+  select{padding:8px;border-radius:8px}
+</style>
+</head>
+<body>
+<header><h2>🚦 Aqlli yo'l harakatini boshqarish tizimi</h2></header>
+<main>
+  <div class="card">
+    <label>Chorraha: <select id="inter"></select></label>
+    <p>
+      <button onclick="run(false)">Tasodifiy holat bo'yicha optimallashtirish</button>
+      <button onclick="run(true)">Favqulodda transport (N yo'nalish)</button>
+    </p>
+    <pre id="result">Natija shu yerda ko'rinadi...</pre>
+  </div>
+  <div class="card"><h3>Hodisalar</h3><pre id="incidents">-</pre></div>
+</main>
+<script>
+const rnd=(a,b)=>Math.round(a+Math.random()*(b-a));
+function fakeObs(){
+  const o={};
+  for(const d of ["N","S","E","W"]){
+    const c=rnd(3,45);
+    o[d]={vehicle_count:c,avg_speed_kmh:rnd(0,40),queue_length_m:rnd(0,120),history:[c-5,c-2,c].map(x=>Math.max(0,x))};
+  }
+  return o;
+}
+async function load(){
+  const r=await fetch("/api/intersections"); const list=await r.json();
+  document.getElementById("inter").innerHTML=list.map(i=>`<option value="${i.id}">${i.name}</option>`).join("");
+  refreshIncidents();
+}
+async function run(emg){
+  const body={intersection_id:+document.getElementById("inter").value,observations:fakeObs(),emergency_direction:emg?"N":null};
+  const r=await fetch("/api/optimize",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)});
+  document.getElementById("result").textContent=JSON.stringify({kirish:body.observations,qaror:await r.json()},null,2);
+  refreshIncidents();
+}
+async function refreshIncidents(){
+  const r=await fetch("/api/incidents"); const l=await r.json();
+  document.getElementById("incidents").textContent=l.length?l.map(i=>`#${i.id} [${i.type}, daraja ${i.severity}] ${i.description}`).join("\n"):"Hodisa yo'q";
+}
+load();
+</script>
+</body>
+</html>
