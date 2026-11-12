@@ -1,0 +1,1 @@
+# Aqilli-yo-l-harakatini-boshqarish
